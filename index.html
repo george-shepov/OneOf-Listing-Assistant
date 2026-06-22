@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Phone-first product photo intake and desktop listing review." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>OneOf Listing Assistant</title>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">ONEOF.STORE</p>
+      <h1>Listing Assistant</h1>
+    </div>
+    <div class="header-actions">
+      <span id="storageBadge" class="badge">Local workspace</span>
+      <button id="installButton" class="button button-secondary hidden">Install</button>
+    </div>
+  </header>
+
+  <nav class="mode-tabs" aria-label="Workspace mode">
+    <button class="tab active" data-view="phone">📱 Phone intake</button>
+    <button class="tab" data-view="desktop">🖥️ Desktop review</button>
+    <button class="tab" data-view="settings">⚙️ Settings</button>
+  </nav>
+
+  <main>
+    <section id="phoneView" class="view active">
+      <div class="hero-card">
+        <div>
+          <p class="eyebrow">PHOTO STREAM TRIAGE</p>
+          <h2>Turn product photos into organized batches</h2>
+          <p>Select existing photos or take new ones. The POC groups images by capture time and keeps the originals untouched.</p>
+        </div>
+        <div class="hero-actions">
+          <label class="button button-primary file-button">
+            Select photos
+            <input id="photoPicker" type="file" accept="image/*" multiple hidden />
+          </label>
+          <label class="button button-secondary file-button">
+            Use camera
+            <input id="cameraPicker" type="file" accept="image/*" capture="environment" hidden />
+          </label>
+        </div>
+      </div>
+
+      <div class="notice">
+        <strong>iPhone limitation:</strong> Safari/PWAs cannot silently move or delete originals in Apple Photos. This workspace can mark imported originals as <em>safe to delete</em>; a later native PhotoKit or Apple Shortcut companion can perform the cleanup after confirmation.
+      </div>
+
+      <section class="stats-grid" aria-label="Workspace summary">
+        <article><span id="photoCount">0</span><small>photos imported</small></article>
+        <article><span id="groupCount">0</span><small>product batches</small></article>
+        <article><span id="cleanupCount">0</span><small>safe to delete</small></article>
+        <article><span id="draftCount">0</span><small>listing drafts</small></article>
+      </section>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">INBOX</p>
+          <h2>Recent photo batches</h2>
+        </div>
+        <div class="inline-actions">
+          <button id="autoGroupButton" class="button button-secondary">Auto-group</button>
+          <button id="demoButton" class="button button-ghost">Load demo</button>
+        </div>
+      </div>
+
+      <div id="phoneEmpty" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No product photos yet</h3>
+        <p>Import several photos of the same item. Photos taken within four minutes are grouped together.</p>
+      </div>
+      <div id="phoneGroups" class="phone-group-list"></div>
+    </section>
+
+    <section id="desktopView" class="view">
+      <div class="desktop-toolbar">
+        <div>
+          <p class="eyebrow">DESKTOP WORKBENCH</p>
+          <h2>Review, enrich, and prepare listings</h2>
+        </div>
+        <div class="inline-actions">
+          <input id="searchInput" class="search-input" type="search" placeholder="Search title, SKU, notes…" />
+          <select id="statusFilter" class="select-input" aria-label="Filter by status">
+            <option value="all">All statuses</option>
+            <option value="inbox">Inbox</option>
+            <option value="product">Product</option>
+            <option value="personal">Personal</option>
+            <option value="draft">Draft ready</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div id="desktopEmpty" class="empty-state">
+        <div class="empty-icon">🖥️</div>
+        <h3>Nothing to review</h3>
+        <p>Import photos from the phone intake screen or load the demo workspace.</p>
+      </div>
+      <div id="desktopGroups" class="desktop-grid"></div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="settings-grid">
+        <article class="panel">
+          <p class="eyebrow">DEVICE HANDOFF</p>
+          <h2>Move the workspace between phone and desktop</h2>
+          <p>This POC is local-first. Export a portable workspace file on one device and import it on the other.</p>
+          <div class="stack-actions">
+            <button id="exportButton" class="button button-primary">Export workspace</button>
+            <label class="button button-secondary file-button">
+              Import workspace
+              <input id="importPicker" type="file" accept="application/json,.json,.oneof" hidden />
+            </label>
+          </div>
+        </article>
+
+        <article class="panel">
+          <p class="eyebrow">GROUPING RULE</p>
+          <h2>Photo time window</h2>
+          <label class="field">
+            Minutes between photos in the same batch
+            <input id="groupWindow" type="number" min="1" max="30" value="4" />
+          </label>
+          <label class="field checkbox-field">
+            <input id="confirmCleanup" type="checkbox" checked />
+            Require confirmation before marking originals safe to delete
+          </label>
+        </article>
+
+        <article class="panel danger-panel">
+          <p class="eyebrow">LOCAL DATA</p>
+          <h2>Reset this device</h2>
+          <p>Deletes imported copies and metadata stored by this browser. It does not touch Apple Photos.</p>
+          <button id="resetButton" class="button button-danger">Reset local workspace</button>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="groupDialog">
+    <form method="dialog" id="groupForm">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">EDIT BATCH</p>
+          <h2 id="dialogTitle">Product batch</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="Close">×</button>
+      </div>
+      <input id="editingGroupId" type="hidden" />
+      <div class="dialog-layout">
+        <div id="dialogPhotos" class="dialog-photos"></div>
+        <div class="form-grid">
+          <label class="field">Working title<input id="groupTitle" required maxlength="80" /></label>
+          <label class="field">Status
+            <select id="groupStatus">
+              <option value="inbox">Inbox</option>
+              <option value="product">Product</option>
+              <option value="personal">Personal / not inventory</option>
+              <option value="draft">Draft ready</option>
+              <option value="archived">Archived</option>
+            </select>
+          </label>
+          <label class="field">SKU<input id="groupSku" placeholder="ONEOF-0001" /></label>
+          <label class="field">Target platform
+            <select id="groupPlatform">
+              <option value="ebay">eBay</option>
+              <option value="facebook">Facebook Marketplace</option>
+              <option value="both">eBay + Facebook</option>
+              <option value="none">Not selected</option>
+            </select>
+          </label>
+          <label class="field full-width">Notes<textarea id="groupNotes" rows="4" placeholder="Model, markings, condition, dimensions, missing parts…"></textarea></label>
+          <label class="field checkbox-field full-width">
+            <input id="safeToDelete" type="checkbox" />
+            Imported copies verified — originals may be removed from the phone after review
+          </label>
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button id="deleteGroupButton" type="button" class="button button-danger">Delete batch</button>
+        <div class="inline-actions">
+          <button value="cancel" class="button button-secondary">Cancel</button>
+          <button id="saveGroupButton" value="default" class="button button-primary">Save batch</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="phoneGroupTemplate">
+    <article class="phone-group-card">
+      <div class="photo-strip"></div>
+      <div class="group-card-body">
+        <div>
+          <span class="status-pill"></span>
+          <h3 class="group-title"></h3>
+          <p class="group-meta"></p>
+        </div>
+        <button class="button button-secondary edit-group">Review</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="desktopGroupTemplate">
+    <article class="desktop-card">
+      <div class="desktop-cover"></div>
+      <div class="desktop-card-body">
+        <div class="card-topline"><span class="status-pill"></span><span class="platform-label"></span></div>
+        <h3 class="group-title"></h3>
+        <p class="group-meta"></p>
+        <p class="group-notes"></p>
+        <div class="desktop-card-actions">
+          <button class="button button-secondary edit-group">Edit</button>
+          <button class="button button-primary make-draft">Create draft</button>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" type="module"></script>
+</body>
+</html>
