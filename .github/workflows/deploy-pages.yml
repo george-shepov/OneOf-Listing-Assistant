@@ -22,10 +22,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stage static site
+        run: |
+          mkdir public
+          cp index.html app.js styles.css manifest.webmanifest sw.js .nojekyll public/
+          cp -R assets public/assets
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: public
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
