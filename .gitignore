@@ -141,3 +141,12 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# OneOf secure API local settings and .NET output
+**/bin/
+**/obj/
+server/OneOf.Lister.Api/appsettings.Development.json
+server/OneOf.Lister.Api/appsettings.Production.json
+.DS_Store
+.idea/
+.vscode/
