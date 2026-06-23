@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#111827" />
-  <meta name="description" content="Phone-first product photo intake and desktop listing review." />
+  <meta name="description" content="Phone-first inventory intake, eBay publishing, and listing optimization." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="assets/icon.svg" />
@@ -18,14 +18,16 @@
       <h1>Listing Assistant</h1>
     </div>
     <div class="header-actions">
-      <span id="storageBadge" class="badge">Local workspace</span>
+      <span id="apiBadge" class="badge badge-muted">eBay API not checked</span>
       <button id="installButton" class="button button-secondary hidden">Install</button>
     </div>
   </header>
 
   <nav class="mode-tabs" aria-label="Workspace mode">
-    <button class="tab active" data-view="phone">📱 Phone intake</button>
-    <button class="tab" data-view="desktop">🖥️ Desktop review</button>
+    <button class="tab active" data-view="phone">📱 Intake</button>
+    <button class="tab" data-view="desktop">🖥️ Workbench</button>
+    <button class="tab" data-view="publisher">📤 Publisher</button>
+    <button class="tab" data-view="optimizer">📈 Optimizer</button>
     <button class="tab" data-view="settings">⚙️ Settings</button>
   </nav>
 
@@ -34,193 +36,162 @@
       <div class="hero-card">
         <div>
           <p class="eyebrow">PHOTO STREAM TRIAGE</p>
-          <h2>Turn product photos into organized batches</h2>
-          <p>Select existing photos or take new ones. The POC groups images by capture time and keeps the originals untouched.</p>
+          <h2>Turn product photos into organized inventory</h2>
+          <p>Select existing photos or take new ones. Images are grouped by capture time, kept locally, and prepared for a listing draft.</p>
         </div>
         <div class="hero-actions">
-          <label class="button button-primary file-button">
-            Select photos
-            <input id="photoPicker" type="file" accept="image/*" multiple hidden />
-          </label>
-          <label class="button button-secondary file-button">
-            Use camera
-            <input id="cameraPicker" type="file" accept="image/*" capture="environment" hidden />
-          </label>
+          <label class="button button-primary file-button">Select photos<input id="photoPicker" type="file" accept="image/*" multiple hidden /></label>
+          <label class="button button-secondary file-button">Use camera<input id="cameraPicker" type="file" accept="image/*" capture="environment" hidden /></label>
         </div>
       </div>
 
-      <div class="notice">
-        <strong>iPhone limitation:</strong> Safari/PWAs cannot silently move or delete originals in Apple Photos. This workspace can mark imported originals as <em>safe to delete</em>; a later native PhotoKit or Apple Shortcut companion can perform the cleanup after confirmation.
-      </div>
+      <div class="notice"><strong>iPhone limitation:</strong> a PWA cannot silently remove originals from Apple Photos. OneOf can verify imported copies and mark originals as safe to delete.</div>
 
       <section class="stats-grid" aria-label="Workspace summary">
         <article><span id="photoCount">0</span><small>photos imported</small></article>
         <article><span id="groupCount">0</span><small>product batches</small></article>
-        <article><span id="cleanupCount">0</span><small>safe to delete</small></article>
         <article><span id="draftCount">0</span><small>listing drafts</small></article>
+        <article><span id="publishedCount">0</span><small>published</small></article>
       </section>
 
       <div class="section-heading">
-        <div>
-          <p class="eyebrow">INBOX</p>
-          <h2>Recent photo batches</h2>
-        </div>
-        <div class="inline-actions">
-          <button id="autoGroupButton" class="button button-secondary">Auto-group</button>
-          <button id="demoButton" class="button button-ghost">Load demo</button>
-        </div>
+        <div><p class="eyebrow">INBOX</p><h2>Recent photo batches</h2></div>
+        <div class="inline-actions"><button id="autoGroupButton" class="button button-secondary">Auto-group</button><button id="demoButton" class="button button-ghost">Load demo</button></div>
       </div>
-
-      <div id="phoneEmpty" class="empty-state">
-        <div class="empty-icon">📦</div>
-        <h3>No product photos yet</h3>
-        <p>Import several photos of the same item. Photos taken within four minutes are grouped together.</p>
-      </div>
+      <div id="phoneEmpty" class="empty-state"><div class="empty-icon">📦</div><h3>No product photos yet</h3><p>Import several photos of the same item. Photos taken close together are grouped into one product.</p></div>
       <div id="phoneGroups" class="phone-group-list"></div>
     </section>
 
     <section id="desktopView" class="view">
       <div class="desktop-toolbar">
-        <div>
-          <p class="eyebrow">DESKTOP WORKBENCH</p>
-          <h2>Review, enrich, and prepare listings</h2>
-        </div>
+        <div><p class="eyebrow">LISTING WORKBENCH</p><h2>Review, identify, price, and prepare</h2></div>
         <div class="inline-actions">
           <input id="searchInput" class="search-input" type="search" placeholder="Search title, SKU, notes…" />
           <select id="statusFilter" class="select-input" aria-label="Filter by status">
-            <option value="all">All statuses</option>
-            <option value="inbox">Inbox</option>
-            <option value="product">Product</option>
-            <option value="personal">Personal</option>
-            <option value="draft">Draft ready</option>
-            <option value="archived">Archived</option>
+            <option value="all">All statuses</option><option value="inbox">Inbox</option><option value="product">Product</option><option value="personal">Personal</option><option value="draft">Draft ready</option><option value="published">Published</option><option value="archived">Archived</option>
           </select>
         </div>
       </div>
-      <div id="desktopEmpty" class="empty-state">
-        <div class="empty-icon">🖥️</div>
-        <h3>Nothing to review</h3>
-        <p>Import photos from the phone intake screen or load the demo workspace.</p>
-      </div>
+      <div id="desktopEmpty" class="empty-state"><div class="empty-icon">🖥️</div><h3>Nothing to review</h3><p>Import photos from Intake or load the demo workspace.</p></div>
       <div id="desktopGroups" class="desktop-grid"></div>
+    </section>
+
+    <section id="publisherView" class="view">
+      <div class="hero-card compact-hero">
+        <div><p class="eyebrow">EBAY INVENTORY API</p><h2>Publish without retyping the listing</h2><p>OneOf sends the title, condition, specifics, description, price, package data, and photos to the secure API service. Credentials remain on the server.</p></div>
+        <div class="hero-actions"><button id="checkApiButton" class="button button-secondary">Check API</button><button id="publishReadyButton" class="button button-primary">Publish all ready</button></div>
+      </div>
+      <div id="publisherNotice" class="notice neutral-notice">Configure the API URL and default eBay policy IDs in Settings before publishing.</div>
+      <div class="section-heading"><div><p class="eyebrow">PUBLISH QUEUE</p><h2>eBay-ready inventory</h2></div><span id="readyCountBadge" class="count-badge">0 ready</span></div>
+      <div id="publisherEmpty" class="empty-state"><div class="empty-icon">📤</div><h3>No listing drafts yet</h3><p>Create a draft in the Workbench, complete required fields, then publish it here.</p></div>
+      <div id="publisherGroups" class="publisher-list"></div>
+    </section>
+
+    <section id="optimizerView" class="view">
+      <div class="hero-card compact-hero">
+        <div><p class="eyebrow">LISTING HEALTH BOT</p><h2>Fix discovery and conversion before cutting price</h2><p>The rule engine prioritizes category and item specifics, then title and photos, then description and shipping. Price is the last resort.</p></div>
+        <div class="hero-actions"><button id="analyzeAllButton" class="button button-primary">Analyze all</button></div>
+      </div>
+      <section class="stats-grid optimizer-stats" aria-label="Optimization summary">
+        <article><span id="optimizerHealthy">0</span><small>healthy</small></article>
+        <article><span id="optimizerDiscovery">0</span><small>discovery issues</small></article>
+        <article><span id="optimizerConversion">0</span><small>conversion issues</small></article>
+        <article><span id="optimizerPrice">0</span><small>price review</small></article>
+      </section>
+      <div id="optimizerEmpty" class="empty-state"><div class="empty-icon">📈</div><h3>No listings to analyze</h3><p>Add traffic metrics to a draft or published listing.</p></div>
+      <div id="optimizerGroups" class="optimizer-list"></div>
     </section>
 
     <section id="settingsView" class="view">
       <div class="settings-grid">
         <article class="panel">
-          <p class="eyebrow">DEVICE HANDOFF</p>
-          <h2>Move the workspace between phone and desktop</h2>
-          <p>This POC is local-first. Export a portable workspace file on one device and import it on the other.</p>
-          <div class="stack-actions">
-            <button id="exportButton" class="button button-primary">Export workspace</button>
-            <label class="button button-secondary file-button">
-              Import workspace
-              <input id="importPicker" type="file" accept="application/json,.json,.oneof" hidden />
-            </label>
-          </div>
+          <p class="eyebrow">SECURE API SERVICE</p><h2>Backend connection</h2>
+          <p>The GitHub Pages front end never stores an eBay access token or client secret. It calls the companion API service.</p>
+          <label class="field">API base URL<input id="apiBaseUrl" type="url" placeholder="https://your-oneof-api.example.com" /></label>
+          <div class="stack-actions"><button id="saveApiSettingsButton" class="button button-primary">Save API settings</button><button id="settingsCheckApiButton" class="button button-secondary">Test connection</button></div>
         </article>
 
         <article class="panel">
-          <p class="eyebrow">GROUPING RULE</p>
-          <h2>Photo time window</h2>
-          <label class="field">
-            Minutes between photos in the same batch
-            <input id="groupWindow" type="number" min="1" max="30" value="4" />
-          </label>
-          <label class="field checkbox-field">
-            <input id="confirmCleanup" type="checkbox" checked />
-            Require confirmation before marking originals safe to delete
-          </label>
+          <p class="eyebrow">EBAY DEFAULTS</p><h2>Publishing defaults</h2>
+          <div class="form-grid single-column">
+            <label class="field">Marketplace<select id="defaultMarketplace"><option value="EBAY_US">eBay US</option></select></label>
+            <label class="field">Merchant location key<input id="defaultLocationKey" placeholder="ONEOF_HOME" /></label>
+            <label class="field">Fulfillment policy ID<input id="defaultFulfillmentPolicyId" /></label>
+            <label class="field">Payment policy ID<input id="defaultPaymentPolicyId" /></label>
+            <label class="field">Return policy ID<input id="defaultReturnPolicyId" /></label>
+          </div>
+          <button id="saveEbayDefaultsButton" class="button button-primary">Save eBay defaults</button>
         </article>
 
-        <article class="panel danger-panel">
-          <p class="eyebrow">LOCAL DATA</p>
-          <h2>Reset this device</h2>
-          <p>Deletes imported copies and metadata stored by this browser. It does not touch Apple Photos.</p>
-          <button id="resetButton" class="button button-danger">Reset local workspace</button>
+        <article class="panel">
+          <p class="eyebrow">DEVICE HANDOFF</p><h2>Move the workspace</h2><p>Export metadata and image copies from one device and import them on another.</p>
+          <div class="stack-actions"><button id="exportButton" class="button button-primary">Export workspace</button><label class="button button-secondary file-button">Import workspace<input id="importPicker" type="file" accept="application/json,.json,.oneof" hidden /></label></div>
         </article>
+
+        <article class="panel">
+          <p class="eyebrow">GROUPING RULE</p><h2>Photo time window</h2>
+          <label class="field">Minutes between photos in the same batch<input id="groupWindow" type="number" min="1" max="30" value="4" /></label>
+          <label class="field checkbox-field"><input id="confirmCleanup" type="checkbox" checked />Require confirmation before marking originals safe to delete</label>
+        </article>
+
+        <article class="panel danger-panel"><p class="eyebrow">LOCAL DATA</p><h2>Reset this device</h2><p>Deletes imported copies and metadata stored by this browser. It does not touch Apple Photos or eBay.</p><button id="resetButton" class="button button-danger">Reset local workspace</button></article>
       </div>
     </section>
   </main>
 
   <dialog id="groupDialog">
     <form method="dialog" id="groupForm">
-      <div class="dialog-header">
-        <div>
-          <p class="eyebrow">EDIT BATCH</p>
-          <h2 id="dialogTitle">Product batch</h2>
-        </div>
-        <button class="icon-button" value="cancel" aria-label="Close">×</button>
-      </div>
+      <div class="dialog-header"><div><p class="eyebrow">EDIT PRODUCT</p><h2 id="dialogTitle">Product batch</h2></div><button type="button" class="icon-button" aria-label="Close" onclick="this.closest('dialog').close()">×</button></div>
       <input id="editingGroupId" type="hidden" />
       <div class="dialog-layout">
-        <div id="dialogPhotos" class="dialog-photos"></div>
-        <div class="form-grid">
-          <label class="field">Working title<input id="groupTitle" required maxlength="80" /></label>
-          <label class="field">Status
-            <select id="groupStatus">
-              <option value="inbox">Inbox</option>
-              <option value="product">Product</option>
-              <option value="personal">Personal / not inventory</option>
-              <option value="draft">Draft ready</option>
-              <option value="archived">Archived</option>
-            </select>
-          </label>
-          <label class="field">SKU<input id="groupSku" placeholder="ONEOF-0001" /></label>
-          <label class="field">Target platform
-            <select id="groupPlatform">
-              <option value="ebay">eBay</option>
-              <option value="facebook">Facebook Marketplace</option>
-              <option value="both">eBay + Facebook</option>
-              <option value="none">Not selected</option>
-            </select>
-          </label>
-          <label class="field full-width">Notes<textarea id="groupNotes" rows="4" placeholder="Model, markings, condition, dimensions, missing parts…"></textarea></label>
-          <label class="field checkbox-field full-width">
-            <input id="safeToDelete" type="checkbox" />
-            Imported copies verified — originals may be removed from the phone after review
-          </label>
+        <div><div id="dialogPhotos" class="dialog-photos"></div><p class="helper-text">The first image becomes the eBay hero image. Reordering will be added in the next slice.</p></div>
+        <div class="editor-sections">
+          <details open><summary>Inventory</summary><div class="form-grid section-fields">
+            <label class="field full-width">eBay title <span class="field-hint"><span id="titleLength">0</span>/80</span><input id="groupTitle" required maxlength="80" /></label>
+            <label class="field">Status<select id="groupStatus"><option value="inbox">Inbox</option><option value="product">Product</option><option value="personal">Personal / not inventory</option><option value="draft">Draft ready</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
+            <label class="field">SKU<input id="groupSku" placeholder="ONEOF-0001" maxlength="50" /></label>
+            <label class="field">Target platform<select id="groupPlatform"><option value="ebay">eBay</option><option value="facebook">Facebook Marketplace</option><option value="both">eBay + Facebook</option><option value="none">Not selected</option></select></label>
+            <label class="field">Brand<input id="listingBrand" placeholder="Unbranded" /></label>
+            <label class="field full-width">Working notes<textarea id="groupNotes" rows="3" placeholder="Model, markings, missing parts, measurements…"></textarea></label>
+          </div></details>
+
+          <details open><summary>eBay listing</summary><div class="form-grid section-fields">
+            <label class="field">Category ID<input id="listingCategoryId" inputmode="numeric" placeholder="e.g. 175672" /></label>
+            <label class="field">Condition<select id="listingCondition"><option value="">Select condition</option><option value="NEW">New</option><option value="NEW_OTHER">New other / open box</option><option value="LIKE_NEW">Like new</option><option value="USED_EXCELLENT">Used - excellent</option><option value="USED_VERY_GOOD">Used - very good</option><option value="USED_GOOD">Used - good</option><option value="USED_ACCEPTABLE">Used - acceptable</option><option value="FOR_PARTS_OR_NOT_WORKING">For parts / not working</option></select></label>
+            <label class="field">UPC / GTIN<input id="listingUpc" inputmode="numeric" placeholder="Leave blank if unavailable" /></label>
+            <label class="field">Quantity<input id="listingQuantity" type="number" min="1" value="1" /></label>
+            <label class="field">Price<input id="listingPrice" type="number" min="0" step="0.01" placeholder="24.99" /></label>
+            <label class="field">Minimum price<input id="listingMinPrice" type="number" min="0" step="0.01" placeholder="18.00" /></label>
+            <label class="field full-width">Condition details<textarea id="listingConditionDescription" rows="2" placeholder="Open package, storage wrinkles, scratches, missing hardware…"></textarea></label>
+            <label class="field full-width">Description<textarea id="listingDescription" rows="7" placeholder="Complete buyer-facing description"></textarea></label>
+            <label class="field full-width">Item specifics <span class="field-hint">one per line: Name: Value</span><textarea id="listingAspects" rows="5" placeholder="Color: Black&#10;Type: Slipcover&#10;Material: Polyester Blend"></textarea></label>
+          </div></details>
+
+          <details><summary>Package and policies</summary><div class="form-grid section-fields">
+            <label class="field">Length (in)<input id="packageLength" type="number" min="0" step="0.1" /></label><label class="field">Width (in)<input id="packageWidth" type="number" min="0" step="0.1" /></label><label class="field">Height (in)<input id="packageHeight" type="number" min="0" step="0.1" /></label><label class="field">Weight (lb)<input id="packageWeight" type="number" min="0" step="0.1" /></label>
+            <label class="field">Location key<input id="listingLocationKey" /></label><label class="field">Fulfillment policy<input id="listingFulfillmentPolicyId" /></label><label class="field">Payment policy<input id="listingPaymentPolicyId" /></label><label class="field">Return policy<input id="listingReturnPolicyId" /></label>
+          </div></details>
+
+          <details><summary>Optimizer metrics</summary><div class="form-grid section-fields">
+            <label class="field">Impressions<input id="metricImpressions" type="number" min="0" value="0" /></label><label class="field">Views<input id="metricViews" type="number" min="0" value="0" /></label><label class="field">Watchers<input id="metricWatchers" type="number" min="0" value="0" /></label><label class="field">Sales<input id="metricSales" type="number" min="0" value="0" /></label><label class="field">Age in days<input id="metricAgeDays" type="number" min="0" value="0" /></label><label class="field">Returns<input id="metricReturns" type="number" min="0" value="0" /></label>
+          </div></details>
+
+          <label class="field checkbox-field"><input id="safeToDelete" type="checkbox" />Imported copies verified — originals may be removed from the phone after review</label>
         </div>
       </div>
-      <div class="dialog-actions">
-        <button id="deleteGroupButton" type="button" class="button button-danger">Delete batch</button>
-        <div class="inline-actions">
-          <button value="cancel" class="button button-secondary">Cancel</button>
-          <button id="saveGroupButton" value="default" class="button button-primary">Save batch</button>
-        </div>
-      </div>
+      <div class="dialog-actions"><button id="deleteGroupButton" type="button" class="button button-danger">Delete product</button><div class="inline-actions"><button type="button" class="button button-secondary" onclick="this.closest('dialog').close()">Cancel</button><button id="previewPayloadButton" type="button" class="button button-secondary">Preview payload</button><button id="saveGroupButton" value="default" class="button button-primary">Save product</button></div></div>
     </form>
   </dialog>
 
-  <template id="phoneGroupTemplate">
-    <article class="phone-group-card">
-      <div class="photo-strip"></div>
-      <div class="group-card-body">
-        <div>
-          <span class="status-pill"></span>
-          <h3 class="group-title"></h3>
-          <p class="group-meta"></p>
-        </div>
-        <button class="button button-secondary edit-group">Review</button>
-      </div>
-    </article>
-  </template>
+  <dialog id="payloadDialog" class="payload-dialog"><div class="dialog-header"><div><p class="eyebrow">EBAY REQUEST</p><h2>Publish payload preview</h2></div><button id="closePayloadButton" class="icon-button" aria-label="Close">×</button></div><pre id="payloadPreview"></pre><div class="dialog-actions"><span></span><button id="copyPayloadButton" class="button button-primary">Copy JSON</button></div></dialog>
 
-  <template id="desktopGroupTemplate">
-    <article class="desktop-card">
-      <div class="desktop-cover"></div>
-      <div class="desktop-card-body">
-        <div class="card-topline"><span class="status-pill"></span><span class="platform-label"></span></div>
-        <h3 class="group-title"></h3>
-        <p class="group-meta"></p>
-        <p class="group-notes"></p>
-        <div class="desktop-card-actions">
-          <button class="button button-secondary edit-group">Edit</button>
-          <button class="button button-primary make-draft">Create draft</button>
-        </div>
-      </div>
-    </article>
-  </template>
+  <template id="phoneGroupTemplate"><article class="phone-group-card"><div class="photo-strip"></div><div class="group-card-body"><div><span class="status-pill"></span><h3 class="group-title"></h3><p class="group-meta"></p></div><button class="button button-secondary edit-group">Review</button></div></article></template>
+
+  <template id="desktopGroupTemplate"><article class="desktop-card"><div class="desktop-cover"></div><div class="desktop-card-body"><div class="card-topline"><span class="status-pill"></span><span class="platform-label"></span></div><h3 class="group-title"></h3><p class="group-meta"></p><p class="group-notes"></p><div class="listing-mini-facts"></div><div class="desktop-card-actions"><button class="button button-secondary edit-group">Edit</button><button class="button button-primary make-draft">Create draft</button></div></div></article></template>
+
+  <template id="publisherGroupTemplate"><article class="publisher-card"><div class="publisher-thumb"></div><div class="publisher-main"><div class="card-topline"><div><span class="status-pill"></span><h3 class="group-title"></h3></div><span class="readiness-pill"></span></div><p class="group-meta"></p><div class="readiness-list"></div><div class="publish-result hidden"></div><div class="desktop-card-actions"><button class="button button-secondary preview-payload">Preview</button><button class="button button-secondary edit-group">Edit</button><button class="button button-primary publish-group">Publish</button></div></div></article></template>
+
+  <template id="optimizerGroupTemplate"><article class="optimizer-card"><div class="optimizer-heading"><div><span class="health-pill"></span><h3 class="group-title"></h3><p class="group-meta"></p></div><div class="metric-summary"></div></div><div class="optimizer-body"><div class="funnel-bar"><span class="impressions-bar"></span><span class="views-bar"></span><span class="sales-bar"></span></div><div class="recommendation-box"><strong class="recommendation-title"></strong><p class="recommendation-reason"></p></div><div class="desktop-card-actions"><button class="button button-secondary edit-group">Edit metrics</button><button class="button button-secondary log-experiment">Log experiment</button><button class="button button-primary analyze-group">Analyze</button></div></div></article></template>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <script src="app.js" type="module"></script>

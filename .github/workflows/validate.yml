@@ -1,0 +1,46 @@
+name: Validate OneOf
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'feature/**'
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Validate static PWA
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check app.js
+      - name: Parse JSON manifests
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('manifest.webmanifest', 'utf8'))"
+          node -e "JSON.parse(require('fs').readFileSync('server/OneOf.Lister.Api/appsettings.example.json', 'utf8'))"
+      - name: Verify referenced static assets
+        run: |
+          test -f index.html
+          test -f styles.css
+          test -f sw.js
+          test -f assets/icon.svg
+
+  api:
+    name: Build companion API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore server/OneOf.Lister.Api/OneOf.Lister.Api.csproj
+      - name: Build
+        run: dotnet build server/OneOf.Lister.Api/OneOf.Lister.Api.csproj --configuration Release --no-restore --warnaserror

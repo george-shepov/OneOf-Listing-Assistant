@@ -1,9 +1,8 @@
 {
   "name": "OneOf Listing Assistant",
-  "short_name": "OneOf",
-  "description": "Phone-first product photo intake and desktop listing review.",
-  "start_url": "./#phone",
-  "scope": "./",
+  "short_name": "OneOf Lister",
+  "description": "Phone-first inventory intake, eBay publishing, and listing optimization.",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f3f4f6",
   "theme_color": "#111827",
