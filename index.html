@@ -141,7 +141,7 @@
 
   <dialog id="groupDialog">
     <form method="dialog" id="groupForm">
-      <div class="dialog-header"><div><p class="eyebrow">EDIT PRODUCT</p><h2 id="dialogTitle">Product batch</h2></div><button class="icon-button" value="cancel" aria-label="Close">×</button></div>
+      <div class="dialog-header"><div><p class="eyebrow">EDIT PRODUCT</p><h2 id="dialogTitle">Product batch</h2></div><button type="button" class="icon-button" aria-label="Close" onclick="this.closest('dialog').close()">×</button></div>
       <input id="editingGroupId" type="hidden" />
       <div class="dialog-layout">
         <div><div id="dialogPhotos" class="dialog-photos"></div><p class="helper-text">The first image becomes the eBay hero image. Reordering will be added in the next slice.</p></div>
@@ -179,7 +179,7 @@
           <label class="field checkbox-field"><input id="safeToDelete" type="checkbox" />Imported copies verified — originals may be removed from the phone after review</label>
         </div>
       </div>
-      <div class="dialog-actions"><button id="deleteGroupButton" type="button" class="button button-danger">Delete product</button><div class="inline-actions"><button value="cancel" class="button button-secondary">Cancel</button><button id="previewPayloadButton" type="button" class="button button-secondary">Preview payload</button><button id="saveGroupButton" value="default" class="button button-primary">Save product</button></div></div>
+      <div class="dialog-actions"><button id="deleteGroupButton" type="button" class="button button-danger">Delete product</button><div class="inline-actions"><button type="button" class="button button-secondary" onclick="this.closest('dialog').close()">Cancel</button><button id="previewPayloadButton" type="button" class="button button-secondary">Preview payload</button><button id="saveGroupButton" value="default" class="button button-primary">Save product</button></div></div>
     </form>
   </dialog>
 
